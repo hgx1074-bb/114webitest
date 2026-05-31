@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>礦石配對 Mini Game - 故事旁白版</title>
+    <style>
+        @font-face {
+            font-family: 'GenRyuMin';
+            src: url('GenRyuMin2-B.ttc'); 
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+
+        #game-canvas {
+            position: relative;
+            width: 1200px;
+            height: 900px;
+            background-color: #000;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            transform-origin: center;
+        }
+
+        .layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1200px;
+            height: 900px;
+            pointer-events: none;
+            transition: transform 0.05s ease-out; 
+        }
+
+        .layer.pressed {
+            transform: translateY(12px);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .click-zone {
+            position: absolute;
+            z-index: 10;
+            cursor: pointer;
+            background: transparent; 
+            border: none;
+            box-sizing: border-box;
+        }
+
+        #key-layer:not(.hidden) {
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+
+        #dialog-box {
+            position: absolute;
+            top: 690px;  
+            left: 0px; 
+            width: 1200px;
+            height: 210px;
+            background: rgba(20, 20, 20, 0.95);
+            border-top: 2px solid #3f444e;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.6);
+            z-index: 20;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 40px;
+        }
+        #dialog-text {
+            margin: 0 0 20px 0;
+            font-size: 20px; 
+            font-weight: bold;
+            color: #e2e8f0;
+            line-height: 1.6;
+            text-align: center;
+            white-space: pre-line; 
+        }
+        .game-btn {
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .game-btn:hover { background: #2d3748; }
+
+        #score-board {
+            position: absolute;
+            top: 690px;
+            left: 0px;
+            width: 710px;
+            height: 210px;
+            z-index: 15; 
+            display: flex;
+            align-items: center;
+            padding-left: 60px; 
+            box-sizing: border-box;
+        }
+
+        #score-display {
+            font-size: 56px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            font-family: 'GenRyuMin', serif; 
+            color: #cbd5e1;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgm" src="Fomalhaut.mp3"></audio>
+
+    <div id="score-board" class="hidden">
+        <div id="score-display">0/45</div>
+    </div>
+
+    <div id="game-canvas">
+        <img src="背景.png" class="layer">
+
+        <img src="人偶_正常.png" class="layer" id="doll-layer">
+
+        <div id="showcase-group">
+            <img src="礦物_綠.png" class="layer" id="img-綠色">
+            <img src="礦物_紫.png" class="layer" id="img-紫色">
+            <img src="礦物_黃.png" class="layer" id="img-黃色">
+            <img src="礦物_白.png" class="layer" id="img-白色">
+            <img src="礦物_黑.png" class="layer" id="img-黑色">
+            <img src="櫃子反光.png" class="layer" id="reflection-layer">
+        </div>
+
+        <img src="鑰匙碎片.png" class="layer hidden" id="key-layer">
+
+        <div id="action-zones"></div>
+
+        <div id="dialog-box">
+            <p id="dialog-text">你準備好了嗎？</p>
+            <button class="game-btn" id="start-btn">是</button>
+        </div>
+    </div>
+
+    <script>
+
+        const BEAT_INTERVAL = 1200; 
+        const PASS_SCORE = 25;
+
+        let score = 0;
+        let currentTarget = null;   
+        let hasClickedThisBeat = false; 
+        let gameIntervalLoop = null;
+        let gameState = "INTRO";    
+
+        const minerals = ["綠色", "白色", "紫色", "黑色", "黃色"];
+        const dollImages = {
+            "正常": "人偶_正常.png",
+            "無頭": "人偶_無頭.png",
+            "綠色": "人偶_綠頭.png",
+            "紫色": "人偶_紫頭.png",
+            "黃色": "人偶_黃頭.png",
+            "白色": "人偶_白頭.png",
+            "黑色": "人偶_黑頭.png"
+        };
+
+        const mineralCoordinates = {
+            "綠色": { x1: 84,  x2: 270, y1: 135, y2: 325 },
+            "白色": { x1: 84,  x2: 270, y1: 425, y2: 595 },
+            "紫色": { x1: 375, x2: 560, y1: 135, y2: 325 },
+            "黑色": { x1: 325, x2: 550, y1: 425, y2: 608 },
+            "黃色": { x1: 615, x2: 803, y1: 150, y2: 330 }
+        };
+
+        const zonesContainer = document.getElementById('action-zones');
+        Object.keys(mineralCoordinates).forEach(name => {
+            const coord = mineralCoordinates[name];
+            const zone = document.createElement('div');
+            zone.className = 'click-zone';
+            zone.title = name;
+            zone.style.left = coord.x1 + 'px';
+            zone.style.top = coord.y1 + 'px';
+            zone.style.width = (coord.x2 - coord.x1) + 'px';
+            zone.style.height = (coord.y2 - coord.y1) + 'px';
+
+            zone.addEventListener('click', () => {
+                handleMineralClick(name);
+            });
+            zonesContainer.appendChild(zone);
+        });
+
+        const bgm = document.getElementById('bgm');
+        const dollLayer = document.getElementById('doll-layer');
+        const dialogBox = document.getElementById('dialog-box');
+        const dialogText = document.getElementById('dialog-text');
+        const startBtn = document.getElementById('start-btn');
+        const scoreDisplay = document.getElementById('score-display'); 
+        const scoreBoard = document.getElementById('score-board');
+        const showcaseGroup = document.getElementById('showcase-group');
+        const keyLayer = document.getElementById('key-layer');
+
+        startBtn.addEventListener('click', handleButtonClick);
+
+        keyLayer.addEventListener('click', () => {
+            if (gameState === "WIN") {
+                keyLayer.classList.add('hidden');
+                scoreBoard.classList.add('hidden');
+                
+                dialogText.textContent = "你獲得了鑰匙碎片。";
+                startBtn.classList.add('hidden'); 
+                dialogBox.classList.remove('hidden');
+                
+                console.log("遊戲結束，已獲得碎片。等待與主畫面整合...");
+            }
+        });
+
+        function handleButtonClick() {
+            if (gameState === "INTRO") {
+                dialogText.textContent = "跟著節奏找到對應的礦石，以通往謎團的盡頭......\n\nBGM：Fomalhaut.mp3  |  by ruha / booth:5038389";
+                startBtn.textContent = "開始";
+                gameState = "STORY";
+            } else if (gameState === "STORY") {
+                gameState = "PLAYING";
+                startGame();
+            } else if (gameState === "FAIL") {
+                gameState = "PLAYING";
+                startGame();
+            }
+        }
+
+        function startGame() {
+            score = 0;
+            // 🚀 遊戲開始重設為 0/45
+            scoreDisplay.textContent = "0/45";
+
+            dialogBox.classList.add('hidden');
+            scoreBoard.classList.remove('hidden'); 
+
+            currentTarget = null;
+            hasClickedThisBeat = false;
+            
+            bgm.currentTime = 0;
+            bgm.play();
+
+            nextBeat(); 
+            gameIntervalLoop = setInterval(nextBeat, BEAT_INTERVAL);
+            bgm.onended = endGameResult;
+        }
+
+        function nextBeat() {
+            hasClickedThisBeat = false; 
+            
+            let nextTarget;
+            do {
+                const randomIndex = Math.floor(Math.random() * minerals.length);
+                nextTarget = minerals[randomIndex];
+            } while (nextTarget === currentTarget);
+
+            currentTarget = nextTarget;
+            dollLayer.src = dollImages[currentTarget];
+            console.log("當前人偶變換為：" + currentTarget + "頭");
+        }
+
+        function handleMineralClick(clickedName) {
+            const targetImg = document.getElementById(`img-${clickedName}`);
+            if (targetImg && gameState === "PLAYING") {
+                targetImg.classList.add('pressed');
+                setTimeout(() => {
+                    targetImg.classList.remove('pressed');
+                }, 100); 
+            }
+
+            if (gameState !== "PLAYING" || !currentTarget || hasClickedThisBeat) return;
+            hasClickedThisBeat = true; 
+
+            if (clickedName === currentTarget) {
+                score++;
+    
+                scoreDisplay.textContent = score + "/45";
+
+                console.log(score);
+            } else {
+                console.log("0");
+            }
+        }
+
+        function endGameResult() {
+            clearInterval(gameIntervalLoop); 
+            currentTarget = null;
+            scoreBoard.classList.add('hidden');
+
+            if (score >= PASS_SCORE) {
+                gameState = "WIN";
+                showcaseGroup.classList.add('hidden'); 
+                keyLayer.classList.remove('hidden');   
+                dollLayer.src = dollImages["無頭"];    
+                
+                dialogText.textContent = "展廳產生了微妙的變化......";
+                startBtn.classList.add('hidden');
+                dialogBox.classList.remove('hidden');
+            } else {
+                gameState = "FAIL";
+                dollLayer.src = dollImages["正常"];   
+                dialogText.textContent = "不夠... 再來一次。";
+                startBtn.textContent = "重試";
+                dialogBox.classList.remove('hidden');
+            }
+        }
+
+        function resizeGame() {
+            const canvas = document.getElementById('game-canvas');
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const scaleX = windowWidth / 1200;
+            const scaleY = windowHeight / 900;
+            const scale = Math.min(scaleX, scaleY, 1);
+            canvas.style.transform = `scale(${scale})`;
+        }
+        window.addEventListener('resize', resizeGame);
+        resizeGame();
+    </script>
+</body>
+</html>
