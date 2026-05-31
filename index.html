@@ -166,7 +166,6 @@
         let gameIntervalLoop = null;
         let gameState = "INTRO";    
 
-        // 🚀 全部更換為英文名稱定義
         const minerals = ["green", "white", "purple", "black", "yellow"];
         const dollImages = {
             "normal": "doll_normal.png",
@@ -247,7 +246,6 @@
             scoreDisplay.textContent = "0/45";
 
             dialogBox.classList.add('hidden');
-            scoreBoard.remove('hidden'); 
             scoreBoard.classList.remove('hidden'); 
 
             currentTarget = null;
@@ -325,12 +323,4 @@
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
             const scaleX = windowWidth / 1200;
-            const scaleY = windowHeight / 900;
-            const scale = Math.min(scaleX, scaleY, 1);
-            canvas.style.transform = `scale(${scale})`;
-        }
-        window.addEventListener('resize', resizeGame);
-        resizeGame();
-    </script>
-</body>
-</html>
+            const scale
