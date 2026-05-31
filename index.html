@@ -16,7 +16,7 @@
             background-color: #121212;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
             font-family: sans-serif;
             overflow: hidden;
@@ -28,7 +28,7 @@
             height: 900px;
             background-color: #000;
             box-shadow: 0 0 30px rgba(0,0,0,0.8);
-            transform-origin: center;
+            transform-origin: top center;
         }
 
         .layer {
@@ -122,9 +122,42 @@
             color: #cbd5e1;
             text-shadow: 0 0 10px rgba(255,255,255,0.2);
         }
+
+        #orientation-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #121212;
+            z-index: 9999;
+            color: #cbd5e1;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 500px), (orientation: portrait) {
+            #orientation-warning {
+                display: flex;
+            }
+            #game-canvas, #score-board {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
+
+    <div id="orientation-warning">
+        <div>請旋轉螢幕以獲得最佳遊戲體驗</div>
+    </div>
 
     <audio id="bgm" src="Fomalhaut.mp3"></audio>
 
@@ -133,20 +166,20 @@
     </div>
 
     <div id="game-canvas">
-        <img src="bg.PNG" class="layer">
+        <img src="背景.png" class="layer">
 
-        <img src="doll_normal.PNG" class="layer" id="doll-layer">
+        <img src="人偶_正常.png" class="layer" id="doll-layer">
 
         <div id="showcase-group">
-            <img src="mineral_green.PNG" class="layer" id="img-green">
-            <img src="mineral_purple.PNG" class="layer" id="img-purple">
-            <img src="mineral_yellow.PNG" class="layer" id="img-yellow">
-            <img src="mineral_white.PNG" class="layer" id="img-white">
-            <img src="mineral_black.PNG" class="layer" id="img-black">
-            <img src="reflection.PNG" class="layer" id="reflection-layer">
+            <img src="礦物_綠.png" class="layer" id="img-綠色">
+            <img src="礦物_紫.png" class="layer" id="img-紫色">
+            <img src="礦物_黃.png" class="layer" id="img-黃色">
+            <img src="礦物_白.png" class="layer" id="img-白色">
+            <img src="礦物_黑.png" class="layer" id="img-黑色">
+            <img src="櫃子反光.png" class="layer" id="reflection-layer">
         </div>
 
-        <img src="key_piece.PNG" class="layer hidden" id="key-layer">
+        <img src="鑰匙碎片.png" class="layer hidden" id="key-layer">
 
         <div id="action-zones"></div>
 
@@ -166,23 +199,23 @@
         let gameIntervalLoop = null;
         let gameState = "INTRO";    
 
-        const minerals = ["green", "white", "purple", "black", "yellow"];
+        const minerals = ["綠色", "白色", "紫色", "黑色", "黃色"];
         const dollImages = {
-            "normal": "doll_normal.PNG",
-            "headless": "doll_headless.PNG",
-            "green": "doll_green.PNG",
-            "purple": "doll_purple.PNG",
-            "yellow": "doll_yellow.PNG",
-            "white": "doll_white.PNG",
-            "black": "doll_black.PNG"
+            "正常": "人偶_正常.png",
+            "無頭": "人偶_無頭.png",
+            "綠色": "人偶_綠頭.png",
+            "紫色": "人偶_紫頭.png",
+            "黃色": "人偶_黃頭.png",
+            "白色": "人偶_白頭.png",
+            "黑色": "人偶_黑頭.png"
         };
 
         const mineralCoordinates = {
-            "green":  { x1: 84,  x2: 270, y1: 135, y2: 325 },
-            "white":  { x1: 84,  x2: 270, y1: 425, y2: 595 },
-            "purple": { x1: 375, x2: 560, y1: 135, y2: 325 },
-            "black":  { x1: 325, x2: 550, y1: 425, y2: 608 },
-            "yellow": { x1: 615, x2: 803, y1: 150, y2: 330 }
+            "綠色": { x1: 84,  x2: 270, y1: 135, y2: 325 },
+            "白色": { x1: 84,  x2: 270, y1: 425, y2: 595 },
+            "紫色": { x1: 375, x2: 560, y1: 135, y2: 325 },
+            "黑色": { x1: 325, x2: 550, y1: 425, y2: 608 },
+            "黃色": { x1: 615, x2: 803, y1: 150, y2: 330 }
         };
 
         const zonesContainer = document.getElementById('action-zones');
@@ -287,7 +320,6 @@
 
             if (clickedName === currentTarget) {
                 score++;
-    
                 scoreDisplay.textContent = score + "/45";
                 console.log(score);
             } else {
@@ -304,14 +336,14 @@
                 gameState = "WIN";
                 showcaseGroup.classList.add('hidden'); 
                 keyLayer.classList.remove('hidden');   
-                dollLayer.src = dollImages["headless"];    
+                dollLayer.src = dollImages["無頭"];    
                 
                 dialogText.textContent = "展廳產生了微妙的變化......";
                 startBtn.classList.add('hidden');
                 dialogBox.classList.remove('hidden');
             } else {
                 gameState = "FAIL";
-                dollLayer.src = dollImages["normal"];   
+                dollLayer.src = dollImages["正常"];   
                 dialogText.textContent = "不夠... 再來一次。";
                 startBtn.textContent = "重試";
                 dialogBox.classList.remove('hidden');
