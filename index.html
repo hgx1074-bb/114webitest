@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>礦石配對 Mini Game - 故事旁白版</title>
+    <title>礦石展廳</title>
     <style>
         @font-face {
             font-family: 'GenRyuMin';
@@ -63,7 +63,6 @@
             cursor: pointer;
         }
 
-
         #dialog-box {
             position: absolute;
             top: 690px;  
@@ -122,7 +121,6 @@
             font-family: 'GenRyuMin', serif; 
             color: #cbd5e1;
             text-shadow: 0 0 10px rgba(255,255,255,0.2);
-
         }
     </style>
 </head>
@@ -135,20 +133,20 @@
     </div>
 
     <div id="game-canvas">
-        <img src="背景.png" class="layer">
+        <img src="bg.png" class="layer">
 
-        <img src="人偶_正常.png" class="layer" id="doll-layer">
+        <img src="doll_normal.png" class="layer" id="doll-layer">
 
         <div id="showcase-group">
-            <img src="礦物_綠.png" class="layer" id="img-綠色">
-            <img src="礦物_紫.png" class="layer" id="img-紫色">
-            <img src="礦物_黃.png" class="layer" id="img-黃色">
-            <img src="礦物_白.png" class="layer" id="img-白色">
-            <img src="礦物_黑.png" class="layer" id="img-黑色">
-            <img src="櫃子反光.png" class="layer" id="reflection-layer">
+            <img src="mineral_green.png" class="layer" id="img-green">
+            <img src="mineral_purple.png" class="layer" id="img-purple">
+            <img src="mineral_yellow.png" class="layer" id="img-yellow">
+            <img src="mineral_white.png" class="layer" id="img-white">
+            <img src="mineral_black.png" class="layer" id="img-black">
+            <img src="reflection.png" class="layer" id="reflection-layer">
         </div>
 
-        <img src="鑰匙碎片.png" class="layer hidden" id="key-layer">
+        <img src="key_piece.png" class="layer hidden" id="key-layer">
 
         <div id="action-zones"></div>
 
@@ -159,7 +157,6 @@
     </div>
 
     <script>
-
         const BEAT_INTERVAL = 1200; 
         const PASS_SCORE = 25;
 
@@ -169,23 +166,24 @@
         let gameIntervalLoop = null;
         let gameState = "INTRO";    
 
-        const minerals = ["綠色", "白色", "紫色", "黑色", "黃色"];
+        // 🚀 全部更換為英文名稱定義
+        const minerals = ["green", "white", "purple", "black", "yellow"];
         const dollImages = {
-            "正常": "人偶_正常.png",
-            "無頭": "人偶_無頭.png",
-            "綠色": "人偶_綠頭.png",
-            "紫色": "人偶_紫頭.png",
-            "黃色": "人偶_黃頭.png",
-            "白色": "人偶_白頭.png",
-            "黑色": "人偶_黑頭.png"
+            "normal": "doll_normal.png",
+            "headless": "doll_headless.png",
+            "green": "doll_green.png",
+            "purple": "doll_purple.png",
+            "yellow": "doll_yellow.png",
+            "white": "doll_white.png",
+            "black": "doll_black.png"
         };
 
         const mineralCoordinates = {
-            "綠色": { x1: 84,  x2: 270, y1: 135, y2: 325 },
-            "白色": { x1: 84,  x2: 270, y1: 425, y2: 595 },
-            "紫色": { x1: 375, x2: 560, y1: 135, y2: 325 },
-            "黑色": { x1: 325, x2: 550, y1: 425, y2: 608 },
-            "黃色": { x1: 615, x2: 803, y1: 150, y2: 330 }
+            "green":  { x1: 84,  x2: 270, y1: 135, y2: 325 },
+            "white":  { x1: 84,  x2: 270, y1: 425, y2: 595 },
+            "purple": { x1: 375, x2: 560, y1: 135, y2: 325 },
+            "black":  { x1: 325, x2: 550, y1: 425, y2: 608 },
+            "yellow": { x1: 615, x2: 803, y1: 150, y2: 330 }
         };
 
         const zonesContainer = document.getElementById('action-zones');
@@ -246,10 +244,10 @@
 
         function startGame() {
             score = 0;
-            // 🚀 遊戲開始重設為 0/45
             scoreDisplay.textContent = "0/45";
 
             dialogBox.classList.add('hidden');
+            scoreBoard.remove('hidden'); 
             scoreBoard.classList.remove('hidden'); 
 
             currentTarget = null;
@@ -293,7 +291,6 @@
                 score++;
     
                 scoreDisplay.textContent = score + "/45";
-
                 console.log(score);
             } else {
                 console.log("0");
@@ -309,14 +306,14 @@
                 gameState = "WIN";
                 showcaseGroup.classList.add('hidden'); 
                 keyLayer.classList.remove('hidden');   
-                dollLayer.src = dollImages["無頭"];    
+                dollLayer.src = dollImages["headless"];    
                 
                 dialogText.textContent = "展廳產生了微妙的變化......";
                 startBtn.classList.add('hidden');
                 dialogBox.classList.remove('hidden');
             } else {
                 gameState = "FAIL";
-                dollLayer.src = dollImages["正常"];   
+                dollLayer.src = dollImages["normal"];   
                 dialogText.textContent = "不夠... 再來一次。";
                 startBtn.textContent = "重試";
                 dialogBox.classList.remove('hidden');
