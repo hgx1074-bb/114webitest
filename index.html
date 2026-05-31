@@ -133,20 +133,20 @@
     </div>
 
     <div id="game-canvas">
-        <img src="bg.png" class="layer">
+        <img src="bg.PNG" class="layer">
 
-        <img src="doll_normal.png" class="layer" id="doll-layer">
+        <img src="doll_normal.PNG" class="layer" id="doll-layer">
 
         <div id="showcase-group">
-            <img src="mineral_green.png" class="layer" id="img-green">
-            <img src="mineral_purple.png" class="layer" id="img-purple">
-            <img src="mineral_yellow.png" class="layer" id="img-yellow">
-            <img src="mineral_white.png" class="layer" id="img-white">
-            <img src="mineral_black.png" class="layer" id="img-black">
-            <img src="reflection.png" class="layer" id="reflection-layer">
+            <img src="mineral_green.PNG" class="layer" id="img-green">
+            <img src="mineral_purple.PNG" class="layer" id="img-purple">
+            <img src="mineral_yellow.PNG" class="layer" id="img-yellow">
+            <img src="mineral_white.PNG" class="layer" id="img-white">
+            <img src="mineral_black.PNG" class="layer" id="img-black">
+            <img src="reflection.PNG" class="layer" id="reflection-layer">
         </div>
 
-        <img src="key_piece.png" class="layer hidden" id="key-layer">
+        <img src="key_piece.PNG" class="layer hidden" id="key-layer">
 
         <div id="action-zones"></div>
 
@@ -168,13 +168,13 @@
 
         const minerals = ["green", "white", "purple", "black", "yellow"];
         const dollImages = {
-            "normal": "doll_normal.png",
-            "headless": "doll_headless.png",
-            "green": "doll_green.png",
-            "purple": "doll_purple.png",
-            "yellow": "doll_yellow.png",
-            "white": "doll_white.png",
-            "black": "doll_black.png"
+            "normal": "doll_normal.PNG",
+            "headless": "doll_headless.PNG",
+            "green": "doll_green.PNG",
+            "purple": "doll_purple.PNG",
+            "yellow": "doll_yellow.PNG",
+            "white": "doll_white.PNG",
+            "black": "doll_black.PNG"
         };
 
         const mineralCoordinates = {
@@ -323,4 +323,12 @@
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
             const scaleX = windowWidth / 1200;
-            const scale
+            const scaleY = windowHeight / 900;
+            const scale = Math.min(scaleX, scaleY, 1);
+            canvas.style.transform = `scale(${scale})`;
+        }
+        window.addEventListener('resize', resizeGame);
+        resizeGame();
+    </script>
+</body>
+</html>
